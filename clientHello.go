@@ -183,6 +183,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 
 				switch nameType {
 				case SNINameTypeDNS:
+					// NOTE (ds-281): this is weird, why are we using the whole data slice and not data[:nameLen]?
 					ch.SNI = string(data)
 				default:
 					// Unknown Name Type
@@ -438,6 +439,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 				data = data[3:]
 				switch nameType {
 				case SNINameTypeDNS:
+					// NOTE (ds-281): this is weird, why are we using the whole data slice and not data[:nameLen]?
 					ch.SNI = string(data)
 				default:
 					// Unknown Name Type

@@ -1,5 +1,7 @@
 module github.com/dreadl0ck/tlsx
 
+replace github.com/dreadl0ck/tlsx v1.0.2 => github.com/ds-281/tlsx v1.0.3
+
 go 1.14
 
 require (
