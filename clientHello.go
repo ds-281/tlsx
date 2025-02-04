@@ -442,6 +442,10 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 				default:
 					// Unknown Name Type
 				}
+				if len(data) < nameLen {
+					// Malformed nameLen for ServerName
+					return ErrHandshakeExtBadLength
+				}
 				data = data[nameLen:]
 			}
 		case ExtSupportedGroups:
