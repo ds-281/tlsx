@@ -181,14 +181,15 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 				nameLen := int(data[1])<<8 | int(data[2])
 				data = data[3:]
 
-				switch nameType {
-				case SNINameTypeDNS:
-					ch.SNI = string(data)
-				default:
-					// Unknown Name Type
-				}
 				if len(data) < nameLen {
 					return ErrHandshakeExtBadLength
+				}
+
+				switch nameType {
+				case SNINameTypeDNS:
+					ch.SNI = string(data[:nameLen])
+				default:
+					// Unknown Name Type
 				}
 				data = data[nameLen:]
 			}
@@ -435,10 +436,15 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 
 				nameLen := int(data[1])<<8 | int(data[2])
 
+				if len(data) < nameLen {
+					// Malformed nameLen for ServerName
+					return ErrHandshakeExtBadLength
+				}
+
 				data = data[3:]
 				switch nameType {
 				case SNINameTypeDNS:
-					ch.SNI = string(data)
+					ch.SNI = string(data[:nameLen])
 				default:
 					// Unknown Name Type
 				}
