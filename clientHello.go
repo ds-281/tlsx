@@ -99,7 +99,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 	ch.CipherSuiteLen = uint16(hs[0])<<8 | uint16(hs[1])
 
 	numCiphers := ch.CipherSuiteLen / 2
-	if len(hs) < int(ch.CipherSuiteLen) + 3 {
+	if len(hs) < int(ch.CipherSuiteLen)+2 {
 		return ErrHandshakeBadLength
 	}
 
@@ -133,7 +133,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 	// Extensions
 	ch.ExtensionLen = uint16(hs[0])<<8 | uint16(hs[1])
 
-	if len(hs) < int(ch.ExtensionLen) {
+	if len(hs) < int(ch.ExtensionLen)+2 {
 		return ErrHandshakeExtBadLength
 	}
 
@@ -361,7 +361,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 	ch.CipherSuiteLen = uint16(hs[0])<<8 | uint16(hs[1])
 
 	numCiphers := ch.CipherSuiteLen / 2
-	if len(hs) < int(ch.CipherSuiteLen) {
+	if len(hs) < int(ch.CipherSuiteLen)+2 {
 		return ErrHandshakeBadLength
 	}
 
@@ -390,7 +390,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 
 	// Extensions
 	ch.ExtensionLen = uint16(hs[0])<<8 | uint16(hs[1])
-	if len(hs) < int(ch.ExtensionLen) {
+	if len(hs) < int(ch.ExtensionLen)+2 {
 		return ErrHandshakeExtBadLength
 	}
 
