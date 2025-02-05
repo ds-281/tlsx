@@ -162,7 +162,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 			if len(data) < 2 {
 				return ErrHandshakeExtBadLength
 			}
-			sniLen := int(data[0])<<8 | int(data[0])
+			sniLen := int(data[0])<<8 | int(data[1])
 
 			data = data[2:]
 
@@ -416,7 +416,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 			if len(data) < 2 {
 				return ErrHandshakeExtBadLength
 			}
-			sniLen := int(data[0])<<8 | int(data[0])
+			sniLen := int(data[0])<<8 | int(data[1])
 
 			data = data[2:]
 
