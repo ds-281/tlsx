@@ -12,13 +12,13 @@ type ClientHello struct {
 	TLSMessage
 	ClientHelloBasic
 
-	Random           []byte
-	SessionID        []byte
-	CompressMethods  []uint8
-	Extensions       map[Extension]uint16 // [Type]Length
-	SignatureAlgs    []uint16
-	OSCP             bool
-	ALPNs            []string
+	Random          []byte
+	SessionID       []byte
+	CompressMethods []uint8
+	Extensions      map[Extension]uint16 // [Type]Length
+	SignatureAlgs   []uint16
+	OSCP            bool
+	ALPNs           []string
 }
 
 func (ch ClientHello) String() string {
@@ -99,7 +99,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 	ch.CipherSuiteLen = uint16(hs[0])<<8 | uint16(hs[1])
 
 	numCiphers := ch.CipherSuiteLen / 2
-	if len(hs) < int(ch.CipherSuiteLen) + 3 {
+	if len(hs) < int(ch.CipherSuiteLen)+2 {
 		return ErrHandshakeBadLength
 	}
 
@@ -133,7 +133,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 	// Extensions
 	ch.ExtensionLen = uint16(hs[0])<<8 | uint16(hs[1])
 
-	if len(hs) < int(ch.ExtensionLen) {
+	if len(hs) < int(ch.ExtensionLen)+2 {
 		return ErrHandshakeExtBadLength
 	}
 
@@ -162,7 +162,7 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 			if len(data) < 2 {
 				return ErrHandshakeExtBadLength
 			}
-			sniLen := int(data[0])<<8 | int(data[0])
+			sniLen := int(data[0])<<8 | int(data[1])
 
 			data = data[2:]
 
@@ -181,15 +181,15 @@ func (ch *ClientHello) Unmarshal(payload []byte) error {
 				nameLen := int(data[1])<<8 | int(data[2])
 				data = data[3:]
 
-				switch nameType {
-				case SNINameTypeDNS:
-					// NOTE (ds-281): this is weird, why are we using the whole data slice and not data[:nameLen]?
-					ch.SNI = string(data)
-				default:
-					// Unknown Name Type
-				}
 				if len(data) < nameLen {
 					return ErrHandshakeExtBadLength
+				}
+
+				switch nameType {
+				case SNINameTypeDNS:
+					ch.SNI = string(data[:nameLen])
+				default:
+					// Unknown Name Type
 				}
 				data = data[nameLen:]
 			}
@@ -361,7 +361,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 	ch.CipherSuiteLen = uint16(hs[0])<<8 | uint16(hs[1])
 
 	numCiphers := ch.CipherSuiteLen / 2
-	if len(hs) < int(ch.CipherSuiteLen) {
+	if len(hs) < int(ch.CipherSuiteLen)+2 {
 		return ErrHandshakeBadLength
 	}
 
@@ -390,7 +390,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 
 	// Extensions
 	ch.ExtensionLen = uint16(hs[0])<<8 | uint16(hs[1])
-	if len(hs) < int(ch.ExtensionLen) {
+	if len(hs) < int(ch.ExtensionLen)+2 {
 		return ErrHandshakeExtBadLength
 	}
 
@@ -417,7 +417,7 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 			if len(data) < 2 {
 				return ErrHandshakeExtBadLength
 			}
-			sniLen := int(data[0])<<8 | int(data[0])
+			sniLen := int(data[0])<<8 | int(data[1])
 
 			data = data[2:]
 
@@ -436,17 +436,17 @@ func (ch *ClientHelloBasic) Unmarshal(payload []byte) error {
 
 				nameLen := int(data[1])<<8 | int(data[2])
 
-				data = data[3:]
-				switch nameType {
-				case SNINameTypeDNS:
-					// NOTE (ds-281): this is weird, why are we using the whole data slice and not data[:nameLen]?
-					ch.SNI = string(data)
-				default:
-					// Unknown Name Type
-				}
 				if len(data) < nameLen {
 					// Malformed nameLen for ServerName
 					return ErrHandshakeExtBadLength
+				}
+
+				data = data[3:]
+				switch nameType {
+				case SNINameTypeDNS:
+					ch.SNI = string(data[:nameLen])
+				default:
+					// Unknown Name Type
 				}
 				data = data[nameLen:]
 			}
